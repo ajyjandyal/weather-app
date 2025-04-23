@@ -2,21 +2,27 @@ async function getWeather() {
   const city = document.getElementById("cityInput").value;
   if (!city) return alert("Please enter a city name.");
 
-  const apiKey = 'abc123xyz456';
-  const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
-  const weatherData = await weatherRes.json();
+  // Geocoding to get coordinates
+  const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`);
+  const geoData = await geoRes.json();
 
-  if (weatherData.cod !== 200) {
+  if (!geoData.results || geoData.results.length === 0) {
     alert("City not found!");
     return;
   }
 
-  // Extract weather info
-  const { name, sys, main, wind, weather } = weatherData;
-  document.getElementById("cityName").innerText = `${name}, ${sys.country}`;
-  document.getElementById("temperature").innerText = `Temperature: ${main.temp}°C`;
-  document.getElementById("wind").innerText = `Wind Speed: ${wind.speed} m/s`;
-  document.getElementById("condition").innerText = `Condition: ${weather[0].description}`;
+  const { latitude, longitude, name, country } = geoData.results[0];
+
+  // Fetch weather
+  const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+  const weatherData = await weatherRes.json();
+  const weather = weatherData.current_weather;
+
+  // Display
+  document.getElementById("cityName").innerText = `${name}, ${country}`;
+  document.getElementById("temperature").innerText = `Temperature: ${weather.temperature}°C`;
+  document.getElementById("wind").innerText = `Wind Speed: ${weather.windspeed} km/h`;
+
 
   let gifSrc = "assets/default.gif";
 
