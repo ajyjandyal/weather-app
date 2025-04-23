@@ -46,5 +46,5 @@ async function getWeather() {
   }
 
   document.getElementById("condition").innerText = `Condition: ${description}`;
-  document.getElementById("weatherGif").src = gifSrc;
+  document.getElementById("weather-image").src = gifSrc;
 }
